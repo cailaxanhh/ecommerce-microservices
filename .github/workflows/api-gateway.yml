@@ -1,0 +1,28 @@
+name: API Gateway
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api-gateway/**'
+      - '.github/workflows/_service.yml'
+      - '.github/workflows/api-gateway.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'api-gateway/**'
+      - '.github/workflows/_service.yml'
+      - '.github/workflows/api-gateway.yml'
+
+concurrency:
+  group: api-gateway-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_service.yml
+    with:
+      service: api-gateway
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

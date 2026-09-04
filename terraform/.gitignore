@@ -1,0 +1,25 @@
+# ── Sensitive / local-only variables ──────────────────────────────
+# NEVER commit real secrets. Create your own terraform.tfvars from
+# terraform.tfvars.example and keep it ignored.
+terraform.tfvars
+*.tfvars
+
+# ── Local state & backup (unless using a remote S3 backend) ───────
+terraform.tfstate
+terraform.tfstate.*
+*.tfstate
+*.tfstate.backup
+*.tfstate.backup.*
+
+# ── Provider download cache ───────────────────────────────────────
+# .terraformrc can be used to set a provider cache dir, but if you
+# use the default local directory this keeps it out of the repo.
+.terraformrc
+
+# ── CLI configuration files ───────────────────────────────────────
+.terraform.tfstate.lock.info
+crash.log
+crash.*.log
+
+# ── Local .terraform directory (providers/modules) ────────────────
+.terraform/

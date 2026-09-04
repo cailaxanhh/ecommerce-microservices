@@ -1,0 +1,175 @@
+name: Service CI/CD (Reusable)
+
+# This workflow is called by each per-service workflow (e.g. user-service.yml).
+# Keeping the logic in ONE place means you maintain it here, and every service
+# automatically gets the same steps.
+#
+# usage: jobs.<name>.uses: ./.github/workflows/_service.yml  with: service: <name>
+# See user-service.yml for a ready example.
+
+on:
+  workflow_call:
+    inputs:
+      service:
+        required: true
+        type: string
+      function-name:
+        required: false
+        type: string
+        default: ''
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+  ECS_CLUSTER: order-platform
+  NODE_VERSION: '20'
+
+jobs:
+  lint-build-test:
+    name: Lint & Build & Test (${{ inputs.service }})
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.service }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ inputs.service }}
+        run: npm ci
+
+      - name: Lint
+        working-directory: ${{ inputs.service }}
+        run: npm run lint
+
+      - name: Build
+        working-directory: ${{ inputs.service }}
+        run: npm run build
+
+      - name: Test
+        working-directory: ${{ inputs.service }}
+        run: npm run test
+        continue-on-error: true
+
+  build-push-image:
+    name: Build & Push Image (${{ inputs.service }})
+    needs: lint-build-test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ inputs.service }}
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/order-platform-${{ inputs.service }}:${{ github.sha }}
+            ${{ env.ECR_REGISTRY }}/order-platform-${{ inputs.service }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-ecs:
+    name: Deploy to ECS (${{ inputs.service }})
+    needs: build-push-image
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "order-platform-${{ inputs.service }}" \
+            --query 'taskDefinition' \
+            --output json > "task-def.json"
+
+      - name: Register new task definition revision
+        run: |
+          TASK_DEF=$(aws ecs register-task-definition \
+            --cli-input-json "$(jq --arg img "${ECR_REGISTRY}/order-platform-${{ inputs.service }}:${{ github.sha }}" \
+              '.containerDefinitions[0].image = $img | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .pendingConstraintsCount, .registeredAt, .registeredBy)' \
+              "task-def.json") \
+            --query 'taskDefinition.{family:family,revision:revision}' \
+            --output json)
+
+          FAMILY=$(echo "$TASK_DEF" | jq -r '.family')
+          REVISION=$(echo "$TASK_DEF" | jq -r '.revision')
+
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service "${{ inputs.service }}" \
+            --task-definition "${FAMILY}:${REVISION}" \
+            --force-new-deployment
+
+      - name: Wait for ECS deployment stability
+        run: |
+          echo "Waiting for ${{ inputs.service }} to stabilize..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services "${{ inputs.service }}" || true
+
+  deploy-lambda:
+    name: Deploy Lambda Consumer (${{ inputs.service }})
+    needs: build-push-image
+    if: inputs.function-name != ''
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install and build service
+        working-directory: ${{ inputs.service }}
+        run: |
+          npm ci
+          npm run build
+
+      - name: Package Lambda artifact
+        run: |
+          cd ${{ inputs.service }}/dist/lambda
+          zip -r "${{ github.workspace }}/${{ inputs.service }}-consumer.zip" .
+
+      - name: Deploy Lambda function
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ inputs.function-name }} \
+            --zip-file "fileb://${{ inputs.service }}-consumer.zip"

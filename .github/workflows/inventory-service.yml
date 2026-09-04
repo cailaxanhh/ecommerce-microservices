@@ -1,0 +1,29 @@
+name: Inventory Service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'inventory-service/**'
+      - '.github/workflows/_service.yml'
+      - '.github/workflows/inventory-service.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'inventory-service/**'
+      - '.github/workflows/_service.yml'
+      - '.github/workflows/inventory-service.yml'
+
+concurrency:
+  group: inventory-service-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_service.yml
+    with:
+      service: inventory-service
+      function-name: inventory-consumer
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

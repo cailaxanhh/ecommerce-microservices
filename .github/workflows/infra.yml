@@ -1,0 +1,92 @@
+name: Infrastructure
+
+# Runs ONLY when shared/shared-infra files change (not when a service changes).
+# Cross-service files like docker-compose.yml, terraform/, and the shared
+# Kubernetes manifests (ingress, configmap, secrets, postgres, redis, kafka)
+# live at the root and are the responsibility of this workflow.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docker-compose.yml'
+      - 'terraform/**'
+      - 'k8s/ingress.yaml'
+      - 'k8s/configmap.yaml'
+      - 'k8s/secrets.yaml'
+      - 'k8s/namespace.yaml'
+      - 'k8s/postgres-*'
+      - 'k8s/redis-*'
+      - 'k8s/kafka-*'
+      - '.github/workflows/_infra.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docker-compose.yml'
+      - 'terraform/**'
+      - 'k8s/ingress.yaml'
+      - 'k8s/configmap.yaml'
+      - 'k8s/secrets.yaml'
+      - 'k8s/namespace.yaml'
+      - 'k8s/postgres-*'
+      - 'k8s/redis-*'
+      - 'k8s/kafka-*'
+      - '.github/workflows/_infra.yml'
+
+concurrency:
+  group: infra-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+jobs:
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform init
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+  # --- Optional: uncomment when you're ready for automated infra deploys ---
+  # terraform-apply:
+  #   name: Terraform Apply
+  #   needs: terraform-validate
+  #   if: github.event_name == 'push'
+  #   runs-on: ubuntu-latest
+  #   environment: production
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ env.AWS_REGION }}
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@v3
+  #       with:
+  #         terraform_version: 1.6.0
+  #     - name: Terraform init
+  #       working-directory: terraform
+  #       run: terraform init
+  #     - name: Terraform plan
+  #       working-directory: terraform
+  #       run: terraform plan -out=tfplan
+  #     - name: Terraform apply
+  #       working-directory: terraform
+  #       run: terraform apply -auto-approve tfplan

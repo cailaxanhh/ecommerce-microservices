@@ -1,0 +1,29 @@
+# ─────────────────────────────────────────────────────────────────────
+# Terraform variable values — TEMPLATE (safe to commit)
+#
+# To use: copy this file to `terraform.tfvars` (which IS git-ignored),
+# then fill in your real values. Never commit the real terraform.tfvars.
+#
+#   Copy-Item terraform.tfvars.example terraform.tfvars
+#
+# Generate strong random secrets, e.g.:
+#   [guid]::NewGuid().ToString().Replace("-","") repeated twice
+# ─────────────────────────────────────────────────────────────────────
+
+aws_region   = "us-east-1"
+project_name = "order-platform"
+
+# ── Database (RDS PostgreSQL master password) ──────────────────────
+db_password       = "REPLACE_WITH_STRONG_PASSWORD"
+
+# Optional RDS tweaks (defaults shown — omit to use defaults)
+# db_instance_class     = "db.t3.medium"
+# db_allocated_storage  = 20
+# db_name               = "postgres"
+
+# ── JWT / auth secrets ─────────────────────────────────────────────
+jwt_secret          = "REPLACE_WITH_LONG_RANDOM_SECRET"
+internal_jwt_secret = "REPLACE_WITH_ANOTHER_LONG_RANDOM_SECRET"
+
+# Optional: RS256 public key for client token verification
+# jwt_public_key = ""

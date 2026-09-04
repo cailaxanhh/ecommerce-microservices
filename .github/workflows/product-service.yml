@@ -1,0 +1,28 @@
+name: Product Service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'product-service/**'
+      - '.github/workflows/_service.yml'
+      - '.github/workflows/product-service.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'product-service/**'
+      - '.github/workflows/_service.yml'
+      - '.github/workflows/product-service.yml'
+
+concurrency:
+  group: product-service-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_service.yml
+    with:
+      service: product-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

@@ -1,0 +1,29 @@
+name: Payment Service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'payment-service/**'
+      - '.github/workflows/_service.yml'
+      - '.github/workflows/payment-service.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'payment-service/**'
+      - '.github/workflows/_service.yml'
+      - '.github/workflows/payment-service.yml'
+
+concurrency:
+  group: payment-service-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_service.yml
+    with:
+      service: payment-service
+      function-name: payment-consumer
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
