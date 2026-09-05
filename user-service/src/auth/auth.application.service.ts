@@ -120,11 +120,17 @@ export class AuthApplicationService {
   }
 
   private get accessExpiresIn(): StringValue {
-    return this.configService.get<string>('JWT_ACCESS_EXPIRES_IN', '15m') as StringValue;
+    return this.configService.get<string>(
+      'JWT_ACCESS_EXPIRES_IN',
+      '15m',
+    ) as StringValue;
   }
 
   private get refreshExpiresIn(): StringValue {
-    return this.configService.get<string>('JWT_REFRESH_EXPIRES_IN', '7d') as StringValue;
+    return this.configService.get<string>(
+      'JWT_REFRESH_EXPIRES_IN',
+      '7d',
+    ) as StringValue;
   }
 }
 
