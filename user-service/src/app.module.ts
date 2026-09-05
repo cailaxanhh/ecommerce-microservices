@@ -8,7 +8,9 @@ import { Address } from './domain/entities/address.entity.js';
 import { PersistenceModule } from './infrastructure/persistence/persistence.module.js';
 import { UserApplicationService } from './user/user.application.service.js';
 import { AddressApplicationService } from './user/address.application.service.js';
+import { AuthApplicationService } from './auth/auth.application.service.js';
 import { UserController } from './interface/http/controllers/user.controller.js';
+import { AuthController } from './interface/http/controllers/auth.controller.js';
 import { HealthController } from './interface/http/controllers/health.controller.js';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtAuthGuard } from './common/jwt-auth.guard.js';
@@ -59,7 +61,12 @@ import { AppConfigModule } from './config/config.module.js';
     }),
     PersistenceModule,
   ],
-  controllers: [UserController, HealthController],
-  providers: [UserApplicationService, AddressApplicationService, JwtAuthGuard],
+  controllers: [UserController, AuthController, HealthController],
+  providers: [
+    UserApplicationService,
+    AddressApplicationService,
+    AuthApplicationService,
+    JwtAuthGuard,
+  ],
 })
 export class AppModule {}

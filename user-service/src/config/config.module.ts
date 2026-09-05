@@ -17,6 +17,9 @@ import * as Joi from 'joi';
         DB_PASSWORD: Joi.string().required(),
         DB_NAME: Joi.string().required(),
         INTERNAL_JWT_SECRET: Joi.string().min(16).required(),
+        JWT_SECRET: Joi.string().min(16).optional(),
+        JWT_ACCESS_EXPIRES_IN: Joi.string().default('15m'),
+        JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
         LOG_LEVEL: Joi.string()
           .valid('fatal', 'error', 'warn', 'info', 'debug', 'trace')
           .default('info'),

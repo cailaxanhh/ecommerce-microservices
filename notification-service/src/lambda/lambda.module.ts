@@ -27,6 +27,10 @@ import { KafkaEventProcessor } from '../modules/kafka/kafka-event.processor.serv
         DISPATCH_MODE: Joi.string().valid('stub', 'smtp').default('stub'),
         SMTP_HOST: Joi.string().allow('').optional(),
         SMTP_PORT: Joi.number().default(587),
+        SMTP_SECURE: Joi.string().allow('true', 'false').default('false'),
+        SMTP_USER: Joi.string().allow('').optional(),
+        SMTP_PASSWORD: Joi.string().allow('').optional(),
+        SMTP_FROM: Joi.string().allow('').optional(),
         LOG_LEVEL: Joi.string()
           .valid('fatal', 'error', 'warn', 'info', 'debug', 'trace')
           .default('info'),

@@ -19,14 +19,20 @@ export class KafkaConsumerService implements OnModuleDestroy {
       .map((b) => b.trim());
 
     this.kafka = new Kafka({
-      clientId: this.config.get<string>('KAFKA_CLIENT_ID', 'notification-service'),
+      clientId: this.config.get<string>(
+        'KAFKA_CLIENT_ID',
+        'notification-service',
+      ),
       brokers,
     });
   }
 
   async onModuleInit(): Promise<void> {
     const orderTopic = this.config.get<string>('ORDER_TOPIC', 'order-events');
-    const inventoryTopic = this.config.get<string>('INVENTORY_TOPIC', 'inventory-events');
+    const inventoryTopic = this.config.get<string>(
+      'INVENTORY_TOPIC',
+      'inventory-events',
+    );
 
     await this.createConsumer(orderTopic);
     await this.createConsumer(inventoryTopic);
@@ -74,7 +80,9 @@ export class KafkaConsumerService implements OnModuleDestroy {
       for (const [key, value] of Object.entries(message.headers)) {
         if (value) {
           if (Array.isArray(value)) {
-            headers[key] = Buffer.concat(value.map((h) => Buffer.from(h))).toString();
+            headers[key] = Buffer.concat(
+              value.map((h) => Buffer.from(h)),
+            ).toString();
           } else {
             headers[key] = Buffer.from(value).toString();
           }

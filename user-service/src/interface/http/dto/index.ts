@@ -3,3 +3,7 @@ export { UpdateUserDto } from './update-user.dto.js';
 export { CreateAddressDto } from './create-address.dto.js';
 export { UserResponseDto } from './user-response.dto.js';
 export { AddressResponseDto } from './address-response.dto.js';
+export { LoginDto } from './login.dto.js';
+export { RegisterDto } from './register.dto.js';
+export { RenewTokenDto } from './renew-token.dto.js';
+export { AuthResponseDto } from './auth-response.dto.js';

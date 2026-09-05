@@ -23,7 +23,7 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Correlation-Id'],
   });
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api/v1');
 
   app.useGlobalPipes(
     new ValidationPipe({
