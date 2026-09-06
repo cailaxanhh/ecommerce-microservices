@@ -8,7 +8,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { KafkaHealthIndicator } from './kafka-health.indicator';
+import { KafkaHealthIndicator } from './kafka-health.indicator.js';
 
 @ApiTags('Health')
 @Controller('health')

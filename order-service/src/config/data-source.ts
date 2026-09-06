@@ -3,10 +3,6 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-/**
- * TypeORM CLI data source configuration.
- * Used by `typeorm migration:*` commands.
- */
 export default new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST || 'localhost',

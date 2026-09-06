@@ -1,6 +1,5 @@
 import {
   IsArray,
-  IsEnum,
   IsNumber,
   IsOptional,
   IsString,
@@ -27,7 +26,9 @@ export class CreateOrderItemDto {
   @Min(1)
   quantity!: number;
 
-  @ApiPropertyOptional({ description: 'Unit price (overridden by server-side price validation)' })
+  @ApiPropertyOptional({
+    description: 'Unit price (overridden by server-side price validation)',
+  })
   @IsOptional()
   @IsNumber()
   unitPrice?: number;

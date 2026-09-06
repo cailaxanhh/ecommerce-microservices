@@ -1,28 +1,32 @@
+import { Injectable } from '@nestjs/common';
 import {
-  HealthIndicator,
   HealthIndicatorResult,
-  HealthCheckError,
+  HealthIndicatorService,
 } from '@nestjs/terminus';
 import { Kafka } from 'kafkajs';
 
-export class KafkaHealthIndicator extends HealthIndicator {
+@Injectable()
+export class KafkaHealthIndicator {
+  constructor(
+    private readonly healthIndicatorService: HealthIndicatorService,
+  ) {}
+
   async isHealthy(
     key: string,
     brokers: string[],
   ): Promise<HealthIndicatorResult> {
-    const kafka = new Kafka({ clientId: 'health-check', brokers });
-    const admin = kafka.admin();
-    try {
-      await admin.connect();
-      await admin.listTopics();
-      await admin.disconnect();
-      return this.getStatus(key, true);
-    } catch (err) {
-      await admin.disconnect().catch(() => {});
-      throw new HealthCheckError(
-        'Kafka check failed',
-        this.getStatus(key, false, { message: (err as Error).message }),
-      );
-    }
+    return await this.healthIndicatorService
+      .check(key)
+      .attempt(async () => {
+        const kafka = new Kafka({ clientId: 'health-check', brokers });
+        const admin = kafka.admin();
+        try {
+          await admin.connect();
+          await admin.listTopics();
+        } finally {
+          await admin.disconnect().catch(() => {});
+        }
+      })
+      .withTimeout(5000);
   }
 }

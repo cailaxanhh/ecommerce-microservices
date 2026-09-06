@@ -4,7 +4,6 @@ export class CreateInitialTables1700000000000 implements MigrationInterface {
   name = 'CreateInitialTables1700000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Create order status enum
     await queryRunner.query(`
       DO $$ BEGIN
         CREATE TYPE order_status_enum AS ENUM ('PENDING', 'CONFIRMED', 'CANCELLED', 'FAILED');
@@ -13,7 +12,6 @@ export class CreateInitialTables1700000000000 implements MigrationInterface {
       END $$;
     `);
 
-    // Create outbox status enum
     await queryRunner.query(`
       DO $$ BEGIN
         CREATE TYPE outbox_status_enum AS ENUM ('PENDING', 'SENT');
@@ -22,7 +20,6 @@ export class CreateInitialTables1700000000000 implements MigrationInterface {
       END $$;
     `);
 
-    // Orders table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS orders (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -56,7 +53,6 @@ export class CreateInitialTables1700000000000 implements MigrationInterface {
         ON orders (created_at DESC);
     `);
 
-    // Order items table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS order_items (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -80,7 +76,6 @@ export class CreateInitialTables1700000000000 implements MigrationInterface {
         ON order_items (product_id);
     `);
 
-    // Outbox table
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS outbox (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -106,7 +101,6 @@ export class CreateInitialTables1700000000000 implements MigrationInterface {
         ON outbox (aggregate_id);
     `);
 
-    // Processed events table (for idempotent event handling)
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS processed_events (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

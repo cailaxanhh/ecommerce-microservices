@@ -1,6 +1,6 @@
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { OrderStatus } from '../enums/order-status.enum';
+import { OrderStatus } from '../enums/order-status.enum.js';
 
 export class ListOrdersQueryDto {
   @ApiPropertyOptional({ enum: OrderStatus, description: 'Filter by order status' })
