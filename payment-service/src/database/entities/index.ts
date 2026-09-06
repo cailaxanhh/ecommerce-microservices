@@ -1,4 +1,4 @@
-export { Payment, PaymentStatus, PaymentMethod } from './payment.entity';
-export { LedgerEntry, LedgerEntryType } from './ledger-entry.entity';
-export { Outbox, OutboxEventType, OutboxStatus } from './outbox.entity';
-export { ProcessedEvent } from './processed-event.entity';
+export { Payment, PaymentStatus, PaymentMethod } from './payment.entity.js';
+export { LedgerEntry, LedgerEntryType } from './ledger-entry.entity.js';
+export { Outbox, OutboxEventType, OutboxStatus } from './outbox.entity.js';
+export { ProcessedEvent } from './processed-event.entity.js';

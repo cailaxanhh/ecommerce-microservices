@@ -27,6 +27,11 @@ export interface AppConfig {
   outbox: {
     pollIntervalMs: number;
   };
+  payment: {
+    provider: string;
+    stripeSecretKey: string;
+    stripeWebhookSecret: string;
+  };
   refund: {
     approvalLimit: number;
     allowSingleApprover: boolean;
@@ -50,6 +55,13 @@ export const appConfigValidation = Joi.object({
   PAYMENT_TOPIC: Joi.string().default('payment-events'),
   ORDER_TOPIC: Joi.string().default('order-events'),
   OUTBOX_POLL_INTERVAL_MS: Joi.number().default(2000),
+  PAYMENT_PROVIDER: Joi.string().valid('mock', 'stripe').default('mock'),
+  STRIPE_SECRET_KEY: Joi.string().when('PAYMENT_PROVIDER', {
+    is: 'stripe',
+    then: Joi.string().required(),
+    otherwise: Joi.string().allow('').optional(),
+  }),
+  STRIPE_WEBHOOK_SECRET: Joi.string().allow('').optional(),
   REFUND_APPROVAL_LIMIT: Joi.number().default(500),
   ALLOW_SINGLE_APPROVER_REFUND: Joi.boolean().default(false),
   LOG_LEVEL: Joi.string().valid('trace', 'debug', 'info', 'warn', 'error', 'fatal').default('info'),
@@ -80,6 +92,11 @@ export default registerAs('app', (): AppConfig => ({
   },
   outbox: {
     pollIntervalMs: parseInt(process.env.OUTBOX_POLL_INTERVAL_MS || '2000', 10),
+  },
+  payment: {
+    provider: process.env.PAYMENT_PROVIDER || 'mock',
+    stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
+    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
   },
   refund: {
     approvalLimit: parseInt(process.env.REFUND_APPROVAL_LIMIT || '500', 10),

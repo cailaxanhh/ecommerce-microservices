@@ -6,7 +6,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Payment } from './payment.entity';
+import { Payment } from './payment.entity.js';
 
 export enum LedgerEntryType {
   CHARGE = 'CHARGE',

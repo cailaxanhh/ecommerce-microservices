@@ -7,7 +7,7 @@ import {
   Index,
   OneToMany,
 } from 'typeorm';
-import { LedgerEntry } from './ledger-entry.entity';
+import { LedgerEntry } from './ledger-entry.entity.js';
 
 export enum PaymentStatus {
   PENDING = 'PENDING',

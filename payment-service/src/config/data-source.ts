@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
-import ormConfig from './typeorm.config';
+import ormConfig from './typeorm.config.js';
 
 /**
  * Standalone data-source for TypeORM CLI (migrations, etc.)
