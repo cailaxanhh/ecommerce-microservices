@@ -29,16 +29,21 @@ export class KafkaEventProcessor {
     meta: {
       topic: string;
       partition: string;
+      offset?: string;
       traceId?: string;
       headers?: Record<string, string>;
     },
   ): Promise<void> {
-    const { topic, partition, headers } = meta;
-    const offset = partition;
+    const { topic, partition, offset, headers } = meta;
 
     const parsed = JSON.parse(rawValue);
-    const eventType = headers?.eventType || parsed.eventType;
-    const eventId = headers?.eventId || parsed.eventId || `${topic}-${partition}-${offset}`;
+    const eventType =
+      headers?.['event-type'] ?? headers?.eventType ?? parsed.eventType;
+    const eventId =
+      headers?.['event-id'] ??
+      headers?.eventId ??
+      parsed.eventId ??
+      (offset ? `${topic}-${partition}-${offset}` : `${topic}-${partition}`);
 
     const dedupKey = `dedup:${topic}:${eventId}`;
     const alreadyProcessed = await this.redis.set(dedupKey, '1', 'EX', 86400, 'NX');
@@ -47,27 +52,32 @@ export class KafkaEventProcessor {
       return;
     }
 
-    this.logger.log(`Received ${eventType} from ${topic} (offset=${offset})`);
+    this.logger.log(
+      `Received ${eventType} from ${topic} (partition=${partition}, offset=${offset ?? '?'})`,
+    );
 
     switch (eventType) {
       case 'OrderCreated': {
         const data: OrderCreatedEvent = parsed.payload ?? parsed;
         await this.paymentsService.processOrderCreated(data, {
-          correlationId: headers?.correlationId || eventId,
+          correlationId:
+            headers?.['correlation-id'] ?? headers?.correlationId ?? eventId,
         });
         break;
       }
       case 'RefundRequired': {
         const data: RefundRequiredEvent = parsed.payload ?? parsed;
         await this.paymentsService.processRefundRequired(data, {
-          correlationId: headers?.correlationId || eventId,
+          correlationId:
+            headers?.['correlation-id'] ?? headers?.correlationId ?? eventId,
         });
         break;
       }
       case 'InventoryReservationFailed': {
         const data: InventoryReservationFailedEvent = parsed.payload ?? parsed;
         await this.paymentsService.processInventoryReservationFailed(data, {
-          correlationId: headers?.correlationId || eventId,
+          correlationId:
+            headers?.['correlation-id'] ?? headers?.correlationId ?? eventId,
         });
         break;
       }

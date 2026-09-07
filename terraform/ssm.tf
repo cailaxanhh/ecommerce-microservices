@@ -77,14 +77,14 @@ resource "aws_ssm_parameter" "redis_port" {
   tags = { Name = "${local.project}-redis-port" }
 }
 
-# ── MSK (Kafka brokers) ────────────────────────────────────────────
-resource "aws_ssm_parameter" "msk_bootstrap" {
+# ── Kafka (self-hosted EC2) ────────────────────────────────────────
+resource "aws_ssm_parameter" "kafka_brokers" {
   name        = "/${local.project}/KAFKA_BROKERS"
-  description = "MSK bootstrap brokers (TLS)"
+  description = "Self-hosted Kafka broker (plaintext, public IP)"
   type        = "String"
-  value       = aws_msk_cluster.main.bootstrap_brokers_tls
+  value       = "${aws_instance.kafka.private_ip}:9092"
 
-  tags = { Name = "${local.project}-msk-bootstrap" }
+  tags = { Name = "${local.project}-kafka-brokers" }
 }
 
 # ── Per-service database names ──────────────────────────────────────

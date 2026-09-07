@@ -1,9 +1,9 @@
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
-import { DownstreamHealthIndicator } from './health.indicator';
+import { DownstreamHealthIndicator } from './health.indicator.js';
 import { HealthCheckService } from '@nestjs/terminus';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { Public } from '../auth/public.decorator';
+import { Public } from '../auth/public.decorator.js';
 
 @Controller()
 export class HealthController {

@@ -1,7 +1,6 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { ThrottlerGuard } from '@nestjs/throttler';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module.js';
@@ -35,7 +34,7 @@ async function bootstrap() {
   );
 
   // Guards
-  app.useGlobalGuards(app.get(ThrottlerGuard), app.get(JwtAuthGuard), app.get(RolesGuard));
+  app.useGlobalGuards(app.get(JwtAuthGuard), app.get(RolesGuard));
 
   // Interceptors
   app.useGlobalInterceptors(app.get(CorrelationInterceptor));

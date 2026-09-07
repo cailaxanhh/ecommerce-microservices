@@ -47,14 +47,13 @@ resource "aws_iam_role_policy" "ecs_execution_ssm" {
         "kms:Decrypt"
       ]
       Resource = [
-        "arn:aws:ssm:${var.aws_region}:*:parameter/${local.project}/*",
-        aws_kms_key.msk.arn
+        "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/*"
       ]
     }]
   })
 }
 
-# ── Task Role (SSM + X-Ray + MSK access for ECS tasks) ─────────────
+# ── Task Role (SSM + X-Ray for ECS tasks) ───────────────────────────
 resource "aws_iam_role" "ecs_task" {
   name = "${local.project}-ecs-task-role"
 
@@ -82,26 +81,6 @@ resource "aws_iam_role_policy" "ecs_task" {
           "xray:PutTelemetryRecords",
           "xray:GetSamplingRules",
           "xray:GetSamplingTargets"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "kafka-cluster:Connect",
-          "kafka-cluster:DescribeTopic",
-          "kafka-cluster:WriteData"
-        ]
-        Resource = [
-          aws_msk_cluster.main.arn,
-          "${aws_msk_cluster.main.arn}/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "kafka:SendMessage",
-          "kafka:Produce"
         ]
         Resource = "*"
       }
@@ -186,26 +165,26 @@ resource "aws_ecs_task_definition" "services" {
       secrets = concat(
         # Common secrets
         [
-          { name = "DB_PASSWORD",         valueFrom = "arn:aws:ssm:${var.aws_region}:*:parameter/${local.project}/DB_PASSWORD" },
-          { name = "JWT_SECRET",          valueFrom = "arn:aws:ssm:${var.aws_region}:*:parameter/${local.project}/JWT_SECRET" },
-          { name = "INTERNAL_JWT_SECRET", valueFrom = "arn:aws:ssm:${var.aws_region}:*:parameter/${local.project}/INTERNAL_JWT_SECRET" },
+          { name = "DB_PASSWORD",         valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/DB_PASSWORD" },
+          { name = "JWT_SECRET",          valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/JWT_SECRET" },
+          { name = "INTERNAL_JWT_SECRET", valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/INTERNAL_JWT_SECRET" },
         ],
         # DB vars (only for services with a database)
         each.value.has_db ? [
-          { name = "DB_HOST", valueFrom = "arn:aws:ssm:${var.aws_region}:*:parameter/${local.project}/DB_HOST" },
-          { name = "DB_PORT", valueFrom = "arn:aws:ssm:${var.aws_region}:*:parameter/${local.project}/DB_PORT" },
-          { name = "DB_USER", valueFrom = "arn:aws:ssm:${var.aws_region}:*:parameter/${local.project}/DB_USER" },
-          { name = "DB_NAME", valueFrom = "arn:aws:ssm:${var.aws_region}:*:parameter/${local.project}/${each.key}/DB_NAME" },
+          { name = "DB_HOST", valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/DB_HOST" },
+          { name = "DB_PORT", valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/DB_PORT" },
+          { name = "DB_USER", valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/DB_USER" },
+          { name = "DB_NAME", valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/${each.key}/DB_NAME" },
         ] : [],
         # Redis vars (only for services with Redis)
         each.value.has_redis ? [
-          { name = "REDIS_HOST", valueFrom = "arn:aws:ssm:${var.aws_region}:*:parameter/${local.project}/REDIS_HOST" },
-          { name = "REDIS_PORT", valueFrom = "arn:aws:ssm:${var.aws_region}:*:parameter/${local.project}/REDIS_PORT" },
+          { name = "REDIS_HOST", valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/REDIS_HOST" },
+          { name = "REDIS_PORT", valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/REDIS_PORT" },
         ] : [],
         # Kafka vars (all services for outbox publishing)
         [
-          { name = "KAFKA_BROKERS",   valueFrom = "arn:aws:ssm:${var.aws_region}:*:parameter/${local.project}/KAFKA_BROKERS" },
-          { name = "KAFKA_CLIENT_ID", valueFrom = "arn:aws:ssm:${var.aws_region}:*:parameter/${local.project}/${each.key}/KAFKA_CLIENT_ID" },
+          { name = "KAFKA_BROKERS",   valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/KAFKA_BROKERS" },
+          { name = "KAFKA_CLIENT_ID", valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/${each.key}/KAFKA_CLIENT_ID" },
         ]
       )
 

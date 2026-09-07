@@ -39,12 +39,12 @@ async function bootstrap() {
 
   app.enableShutdownHooks();
 
-  const port = config.get('app.port') || 3004;
+  const port = config.get('app.port') || 3003;
   await app.startAllMicroservices();
 
   await app.listen(port);
 
-  logger.log(`Payment Service listening on http://localhost:${port}/api`);
+  logger.log(`Order Service listening on http://localhost:${port}/api`);
   logger.log('Kafka microservice also listening');
 }
 await bootstrap();

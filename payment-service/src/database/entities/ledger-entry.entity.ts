@@ -6,7 +6,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Payment } from './payment.entity.js';
+import type { Payment } from './payment.entity.js';
 
 export enum LedgerEntryType {
   CHARGE = 'CHARGE',
@@ -21,7 +21,7 @@ export class LedgerEntry {
   @Column({ type: 'uuid' })
   paymentId!: string;
 
-  @ManyToOne(() => Payment, (payment) => payment.ledgerEntries, {
+  @ManyToOne('Payment', 'ledgerEntries', {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'paymentId' })

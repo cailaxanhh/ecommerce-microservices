@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { v4 as uuid } from 'uuid';
+import { v4 as uuid, validate as isUuid } from 'uuid';
 import { CreateOrderData, OrderRepository } from './order.repository.js';
 import { ValidationService } from '../validation/validation.service.js';
 import { OutboxRepository } from '../outbox/outbox.repository.js';
@@ -62,6 +62,10 @@ export class OrderService {
     );
 
     const orderNumber = await this.orderRepository.generateOrderNumber();
+
+    if (!correlationId || !isUuid(correlationId)) {
+      correlationId = uuid();
+    }
 
     // Build order data
     const orderData: CreateOrderData = {

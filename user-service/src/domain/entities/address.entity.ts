@@ -7,7 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { User } from './user.entity.js';
+import type { User } from './user.entity.js';
 import { AddressType } from './address-type.enum.js';
 
 @Entity('addresses')
@@ -52,7 +52,7 @@ export class Address {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 
-  @ManyToOne(() => User, (user) => user.addresses, {
+  @ManyToOne('User', 'addresses', {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id' })

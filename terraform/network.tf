@@ -148,7 +148,7 @@ resource "aws_vpc_endpoint" "logs" {
 # ALB security group — public inbound
 resource "aws_security_group" "alb" {
   name        = "${local.project}-alb-sg"
-  description = "ALB security group — HTTP/HTTPS inbound"
+  description = "ALB security group - HTTP/HTTPS inbound"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -287,37 +287,6 @@ resource "aws_security_group_rule" "lambda_to_redis" {
   source_security_group_id = aws_security_group.lambda.id
   security_group_id        = aws_security_group.redis.id
   description              = "Lambda to Redis"
-}
-
-# MSK security group
-resource "aws_security_group" "msk" {
-  name        = "${local.project}-msk-sg"
-  description = "MSK cluster security group"
-  vpc_id      = aws_vpc.main.id
-
-  tags = { Name = "${local.project}-msk-sg" }
-}
-
-# Allow ECS tasks → MSK
-resource "aws_security_group_rule" "ecs_to_msk" {
-  type                     = "ingress"
-  from_port                = 9092
-  to_port                  = 9098
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.ecs_tasks.id
-  security_group_id        = aws_security_group.msk.id
-  description              = "ECS tasks to MSK"
-}
-
-# Allow Lambda → MSK
-resource "aws_security_group_rule" "lambda_to_msk" {
-  type                     = "ingress"
-  from_port                = 9092
-  to_port                  = 9098
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.lambda.id
-  security_group_id        = aws_security_group.msk.id
-  description              = "Lambda to MSK"
 }
 
 # VPC Endpoints security group

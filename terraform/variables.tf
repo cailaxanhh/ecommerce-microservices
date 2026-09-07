@@ -25,6 +25,11 @@ variable "ecr_image_tag" {
   default     = "latest"
 }
 
+variable "key_name" {
+  description = "SSH key pair name for the Kafka EC2 instance (create one in EC2 first)"
+  type        = string
+}
+
 # ─────────────────────────────────────────────────────────────────────
 # Database
 # ─────────────────────────────────────────────────────────────────────
@@ -43,7 +48,7 @@ variable "db_password" {
 variable "db_instance_class" {
   description = "RDS instance class"
   type        = string
-  default     = "db.t3.medium"
+  default     = "db.t2.micro"
 }
 
 variable "db_allocated_storage" {

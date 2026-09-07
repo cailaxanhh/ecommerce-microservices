@@ -4,7 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import { ScheduleModule } from '@nestjs/schedule';
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { NotificationModule } from './modules/notification/notification.module.js';
 import { KafkaConsumerModule } from './modules/kafka/kafka-consumer.module.js';
 import { HealthModule } from './modules/health/health.module.js';

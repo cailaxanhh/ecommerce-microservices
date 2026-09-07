@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { NotificationModule } from '../modules/notification/notification.module.js';
 import { KafkaEventProcessor } from '../modules/kafka/kafka-event.processor.service.js';
 

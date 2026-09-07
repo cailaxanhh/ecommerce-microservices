@@ -2,7 +2,7 @@ import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import * as Joi from 'joi';
+import Joi from 'joi';
 
 import appConfig, { appConfigValidation } from './config/app.config.js';
 import ormConfig from './config/typeorm.config.js';

@@ -1,10 +1,10 @@
 import { Controller, Get, Post, Param, Body, Query, Req, Res, Logger } from '@nestjs/common';
 import type { Response } from 'express';
-import { ProxyService } from './proxy.service';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { ListProductsQueryDto } from './dto/list-products-query.dto';
-import { CORRELATION_ID_HEADER } from '../common/correlation/correlation.constants';
-import type { TypedRequest } from '../common/types/typed-request';
+import { ProxyService } from './proxy.service.js';
+import { CreateOrderDto } from './dto/create-order.dto.js';
+import { ListProductsQueryDto } from './dto/list-products-query.dto.js';
+import { CORRELATION_ID_HEADER } from '../common/correlation/correlation.constants.js';
+import type { TypedRequest } from '../common/types/typed-request.js';
 
 @Controller()
 export class ProxyController {
@@ -106,12 +106,16 @@ export class ProxyController {
     const user = this.getUser(req);
     const correlationId = this.getCorrelationId(req);
     const internalToken = this.proxyService.issueInternalToken(user);
+    const orderPayload: Record<string, unknown> = {
+      ...body,
+      customerUserId: user.userId,
+    };
     return this.forward(
       res,
       this.proxyService.createOrder(
         internalToken,
         correlationId,
-        body as unknown as Record<string, unknown>,
+        orderPayload,
       ),
       correlationId,
     );

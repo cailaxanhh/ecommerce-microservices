@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ThrottlerStorage } from '@nestjs/throttler';
 import { ConfigService } from '@nestjs/config';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
 interface ThrottlerStorageRecord {
   totalHits: number;

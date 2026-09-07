@@ -21,7 +21,7 @@ resource "aws_s3_bucket_policy" "alb_logs" {
     Statement = [{
       Effect = "Allow"
       Principal = {
-        AWS = "arn:aws:iam::${data.aws_elb_service_account.main.arn}"
+        AWS = "${data.aws_elb_service_account.main.arn}"
       }
       Action   = "s3:PutObject"
       Resource = "${aws_s3_bucket.alb_logs.arn}/*"

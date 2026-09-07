@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { KafkaProducerService } from './kafka-producer.service.js';
@@ -7,6 +7,7 @@ import { KafkaEventProcessor } from './kafka-event.processor.service.js';
 import { PaymentsModule } from '../payment/payments.module.js';
 import { AppConfig } from '../../config/app.config.js';
 
+@Global()
 @Module({
   imports: [
     ClientsModule.registerAsync([

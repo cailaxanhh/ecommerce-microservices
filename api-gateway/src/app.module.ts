@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module.js';
 import { AppConfigModule } from './config/config.module.js';
 import { CorrelationModule } from './common/correlation/correlation.module.js';
-import { RedisThrottlerStorage } from './common/throttler/throttler';
+import { RedisThrottlerStorage } from './common/throttler/throttler.js';
 import { HealthModule } from './healthe/health.module.js';
 import { ProxyModule } from './proxy/proxy.module.js';
 
@@ -47,6 +48,12 @@ import { ProxyModule } from './proxy/proxy.module.js';
     CorrelationModule,
     ProxyModule,
     HealthModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

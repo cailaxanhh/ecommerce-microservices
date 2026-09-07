@@ -34,11 +34,10 @@ export class KafkaConsumerService implements OnModuleDestroy {
       'inventory-events',
     );
 
-    await this.createConsumer(orderTopic);
-    await this.createConsumer(inventoryTopic);
+    await this.createConsumer([orderTopic, inventoryTopic]);
 
     this.logger.log(
-      `Kafka consumers started on topics: ${orderTopic}, ${inventoryTopic}`,
+      `Kafka consumer started on topics: ${orderTopic}, ${inventoryTopic}`,
     );
   }
 
@@ -49,14 +48,16 @@ export class KafkaConsumerService implements OnModuleDestroy {
     this.logger.log('Kafka consumers disconnected');
   }
 
-  private async createConsumer(topic: string): Promise<void> {
+  private async createConsumer(topics: string[]): Promise<void> {
     const consumer = this.kafka.consumer({
       groupId: 'notification-service',
       allowAutoTopicCreation: true,
     });
 
     await consumer.connect();
-    await consumer.subscribe({ topic, fromBeginning: false });
+    for (const topic of topics) {
+      await consumer.subscribe({ topic, fromBeginning: false });
+    }
 
     await consumer.run({
       eachMessage: async (payload: EachMessagePayload) => {
@@ -68,7 +69,7 @@ export class KafkaConsumerService implements OnModuleDestroy {
   }
 
   private async handleMessage(payload: EachMessagePayload): Promise<void> {
-    const { topic, message } = payload;
+    const { topic, partition, message } = payload;
     const raw = this.extractMessage(message);
     if (!raw) {
       this.logger.warn(`Empty message on topic ${topic}, skipping`);
@@ -92,7 +93,7 @@ export class KafkaConsumerService implements OnModuleDestroy {
 
     await this.processor.process(raw, {
       topic,
-      partition: payload.partition,
+      partition,
       headers,
     });
   }

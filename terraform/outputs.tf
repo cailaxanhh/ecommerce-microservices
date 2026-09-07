@@ -22,9 +22,9 @@ output "redis_endpoint" {
   value       = aws_elasticache_replication_group.main.primary_endpoint_address
 }
 
-output "msk_bootstrap_brokers_tls" {
-  description = "MSK bootstrap brokers (TLS)"
-  value       = aws_msk_cluster.main.bootstrap_brokers_tls
+output "kafka_brokers" {
+  description = "Self-hosted Kafka broker (plaintext, private VPC IP)"
+  value       = "${aws_instance.kafka.private_ip}:9092"
   sensitive   = true
 }
 

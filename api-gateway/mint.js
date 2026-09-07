@@ -1,0 +1,1 @@
+const jwt=require('jsonwebtoken');const t=jwt.sign({sub:'2c31afef-d52a-452b-865a-5e52387a27fb',role:'admin',roles:['admin']},'HYUIhU6iufn6o4dSZx0YOyJLWjV9QUnPQfacfnp4K5Y',{expiresIn:'50m'});console.log(t);

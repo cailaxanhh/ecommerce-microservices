@@ -147,12 +147,15 @@ export class PaymentsService {
       `Processing OrderCreated for orderId=${event.orderId} (correlationId=${ctx.correlationId})`,
     );
 
+    const totalAmount =
+      event.amount ?? (event as unknown as { totalAmount?: number }).totalAmount;
+
     await this.charge({
       orderId: event.orderId,
       customerUserId: event.customerUserId,
-      amount: event.amount,
+      amount: totalAmount,
       currency: event.currency,
-      cardToken: event.cardToken,
+      cardToken: event.cardToken ?? 'tok_mock_default',
       idempotencyKey: event.idempotencyKey,
       correlationId: ctx.correlationId,
     });

@@ -5,7 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Order } from './order.entity.js';
+import type { Order } from './order.entity.js';
 
 @Entity('order_items')
 export class OrderItem {
@@ -15,7 +15,7 @@ export class OrderItem {
   @Column({ name: 'order_id', type: 'uuid' })
   orderId!: string;
 
-  @ManyToOne(() => Order, (order) => order.items, { onDelete: 'CASCADE' })
+  @ManyToOne('Order', 'items', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'order_id' })
   order!: Order;
 

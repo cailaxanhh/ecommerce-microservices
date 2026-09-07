@@ -53,7 +53,6 @@ export class OutboxRepository {
 
     return this.repo
       .createQueryBuilder('outbox')
-      .setLock('pessimistic_write')
       .where('outbox.status = :status', { status: OutboxStatus.PENDING })
       .orderBy('outbox.created_at', 'ASC')
       .take(limit)
@@ -64,23 +63,31 @@ export class OutboxRepository {
    * Mark outbox entry as sent.
    */
   async markSent(id: string, queryRunner?: QueryRunner): Promise<void> {
-    const manager = queryRunner ? queryRunner.manager : this.repo;
-
-    await manager.update(Outbox, id, {
+    const update = {
       status: OutboxStatus.SENT,
       processedAt: new Date(),
-    });
+    };
+
+    if (queryRunner) {
+      await queryRunner.manager.update(Outbox, id, update);
+      return;
+    }
+
+    await this.repo.update(id, update);
   }
 
   /**
    * Reset a failed entry back to PENDING for retry.
    */
   async markFailed(id: string, queryRunner?: QueryRunner): Promise<void> {
-    const manager = queryRunner ? queryRunner.manager : this.repo;
-
     // Leave status as PENDING so it will be retried on next poll cycle
-    await manager.update(Outbox, id, {
-      processedAt: null,
-    });
+    const update = { processedAt: null };
+
+    if (queryRunner) {
+      await queryRunner.manager.update(Outbox, id, update);
+      return;
+    }
+
+    await this.repo.update(id, update);
   }
 }

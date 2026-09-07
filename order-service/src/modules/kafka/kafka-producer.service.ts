@@ -37,9 +37,6 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
 
     this.producer = this.kafka.producer({
       allowAutoTopicCreation: true,
-      idempotent: true,
-      transactionalId: `${clientId}-producer`,
-      maxInFlightRequests: 5,
     });
 
     try {

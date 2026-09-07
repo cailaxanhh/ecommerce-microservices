@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { CORRELATION_ID_HEADER } from '../common/correlation/correlation.constants';
+import { CORRELATION_ID_HEADER } from '../common/correlation/correlation.constants.js';
 import { AxiosResponse } from 'axios';
 
 interface DownstreamUser {
@@ -29,6 +29,7 @@ export class ProxyService {
     return this.jwtService.sign({
       sub: user.userId,
       role: user.role,
+      roles: [user.role],
     });
   }
 

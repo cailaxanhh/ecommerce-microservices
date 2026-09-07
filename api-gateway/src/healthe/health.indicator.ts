@@ -7,7 +7,7 @@ export class DownstreamHealthIndicator {
 
   async isHealthy(key: string, url: string): Promise<HealthIndicatorResult> {
     try {
-      await firstValueFrom(this.httpService.get(`${url}/health`, { timeout: 3000 }));
+      await firstValueFrom(this.httpService.get(`${url}/api/v1/health`, { timeout: 3000 }));
       return {
         [key]: {
           status: 'up',

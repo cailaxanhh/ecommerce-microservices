@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AuthModule } from '../auth/auth.module';
-import { ProxyController } from './proxy.controller';
-import { ProxyService } from './proxy.service';
+import { AuthModule } from '../auth/auth.module.js';
+import { ProxyController } from './proxy.controller.js';
+import { ProxyService } from './proxy.service.js';
 
 @Module({
   imports: [

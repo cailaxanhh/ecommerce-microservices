@@ -11,7 +11,6 @@ resource "aws_cloudwatch_log_group" "ecs_services" {
   tags = { Name = "${local.project}-${each.key}-logs" }
 }
 
-# MSK log group is defined in msk.tf
 # Lambda log groups are defined in lambda.tf
 
 # ── CloudWatch Alarms (basic) ───────────────────────────────────────

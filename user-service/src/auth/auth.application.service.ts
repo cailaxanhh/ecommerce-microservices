@@ -14,7 +14,7 @@ export interface AuthTokenPair {
   user: User;
 }
 
-const DEFAULT_ROLE = 'USER';
+const DEFAULT_ROLE = 'customer';
 
 @Injectable()
 export class AuthApplicationService {

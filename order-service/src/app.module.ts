@@ -14,6 +14,7 @@ import { KafkaModule } from './modules/kafka/kafka.module.js';
 import { OrderModule } from './modules/order/order.module.js';
 import { InventoryConsumerModule } from './modules/kafka/inventory-consumer.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { AuthModule } from './common/auth/auth.module.js';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { HealthModule } from './modules/health/health.module.js';
     }),
 
     OrderModule,
+    AuthModule,
     OutboxModule,
     KafkaModule,
     InventoryConsumerModule,

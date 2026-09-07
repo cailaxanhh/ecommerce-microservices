@@ -3,13 +3,6 @@ import { NotificationService } from '../notification/notification.service.js';
 import { ProcessedEventRepository } from '../../database/repositories/processed-event.repository.js';
 import { NotificationKind } from '../../database/entities/notification-delivery.entity.js';
 
-interface DomainEvent {
-  eventId: string;
-  eventType: string;
-  payload: Record<string, unknown>;
-  timestamp?: string;
-}
-
 @Injectable()
 export class KafkaEventProcessor {
   private readonly logger = new Logger(KafkaEventProcessor.name);
@@ -23,9 +16,9 @@ export class KafkaEventProcessor {
     rawValue: string,
     meta: { topic: string; partition: number; headers?: Record<string, string> },
   ): Promise<void> {
-    let event: DomainEvent;
+    let parsed: Record<string, unknown>;
     try {
-      event = JSON.parse(rawValue) as DomainEvent;
+      parsed = JSON.parse(rawValue) as Record<string, unknown>;
     } catch {
       this.logger.error(
         `Malformed JSON on topic ${meta.topic}: ${rawValue.substring(0, 200)}`,
@@ -33,7 +26,14 @@ export class KafkaEventProcessor {
       return;
     }
 
-    const { eventId, eventType, payload: eventPayload } = event;
+    const eventId =
+      meta.headers?.['event-id'] ??
+      meta.headers?.eventId ??
+      (parsed['eventId'] as string);
+    const eventType =
+      meta.headers?.['event-type'] ??
+      meta.headers?.eventType ??
+      (parsed['eventType'] as string);
 
     if (!eventId || !eventType) {
       this.logger.warn(
@@ -42,7 +42,16 @@ export class KafkaEventProcessor {
       return;
     }
 
-    const correlationId = meta.headers?.['correlationId'];
+    // Order-service publishes the flat outbox payload (no nested `payload`),
+    // so fall back to the whole message when `payload` is absent.
+    const eventPayload =
+      (parsed['payload'] as Record<string, unknown> | undefined) ??
+      parsed ??
+      {};
+
+    const correlationId =
+      meta.headers?.['correlation-id'] ??
+      meta.headers?.correlationId;
 
     const alreadyProcessed =
       await this.processedEventRepo.existsByEventIdAndType(eventId, eventType);
@@ -55,6 +64,15 @@ export class KafkaEventProcessor {
 
     try {
       switch (eventType) {
+        case 'OrderCreated':
+          await this.onOrderCreated(
+            eventId,
+            eventType,
+            eventPayload,
+            correlationId,
+          );
+          break;
+
         case 'OrderConfirmed':
           await this.onOrderConfirmed(
             eventId,
@@ -101,6 +119,40 @@ export class KafkaEventProcessor {
         `Error handling event ${eventType} (${eventId}): ${msg}`,
       );
     }
+  }
+
+  private async onOrderCreated(
+    eventId: string,
+    eventType: string,
+    payload: Record<string, unknown>,
+    correlationId?: string,
+  ): Promise<void> {
+    const recipientEmail =
+      (payload['recipientEmail'] as string) ?? 'customer@example.com';
+    const orderId = (payload['orderId'] as string) ?? 'unknown';
+    const orderNumber = (payload['orderNumber'] as string) ?? orderId;
+    const totalAmount = (payload['totalAmount'] as number) ?? undefined;
+
+    const body = [
+      `Your order ${orderNumber} has been received.`,
+      totalAmount !== undefined
+        ? `Total: ${totalAmount} ${(payload['currency'] as string) ?? 'USD'}`
+        : '',
+      'We will notify you once it is confirmed.',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    await this.notificationService.createAndDispatch(
+      {
+        kind: NotificationKind.EMAIL,
+        recipient: recipientEmail,
+        channel: 'email',
+        subject: `Order ${orderNumber} Received`,
+        body,
+      },
+      { eventId, eventType, correlationId },
+    );
   }
 
   private async onOrderConfirmed(

@@ -11,9 +11,11 @@ import { StubDispatcher } from '../kafka/dispatcher/stub-dispatcher.service.js';
 import { SmtpDispatcher } from '../kafka/dispatcher/smtp-dispatcher.service.js';
 import { NotificationDispatcher } from '../kafka/dispatcher/notification-dispatcher.interface.js';
 import { ConfigService } from '@nestjs/config';
+import { AuthModule } from '../../common/auth/auth.module.js';
 
 @Module({
   imports: [
+    AuthModule,
     TypeOrmModule.forFeature([NotificationDelivery, ProcessedEvent]),
     MailerModule.forRootAsync({
       imports: [],

@@ -8,9 +8,14 @@ import { MockPaymentProviderStrategy } from './strategies/mock-payment-provider.
 import { StripePaymentProviderStrategy } from './strategies/stripe-payment-provider.strategy.js';
 import { PaymentProviderStrategy } from './strategies/payment-provider.strategy.js';
 import { OutboxModule } from '../outbox/outbox.module.js';
+import { AuthModule } from '../auth/auth.module.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Payment, LedgerEntry]), OutboxModule],
+  imports: [
+    TypeOrmModule.forFeature([Payment, LedgerEntry]),
+    OutboxModule,
+    AuthModule,
+  ],
   controllers: [PaymentsController],
   providers: [
     PaymentsService,
